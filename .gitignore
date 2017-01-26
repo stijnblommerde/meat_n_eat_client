@@ -1,0 +1,6 @@
+.idea/
+__pycache__/
+env/
+app/main/__pycache__/views.cpython-35.pyc
+app/main/__pycache__/__init__.cpython-35.pyc
+app/__pycache__/__init__.cpython-35.pyc
