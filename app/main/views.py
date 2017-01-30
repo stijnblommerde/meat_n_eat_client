@@ -2,13 +2,14 @@ import urllib
 import json
 from httplib2 import Http
 from flask import render_template, request, redirect, url_for
-from flask_httpauth import HTTPBasicAuth
+from flask_login import login_required, current_user
 from app.main import main
 
-auth = HTTPBasicAuth()
 
-
-@main.index
+@main.route('/')
+@login_required
+def index():
+    return "Index"
 
 
 @main.route('/token', methods=['GET', 'POST'])

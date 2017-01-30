@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+<!-- import bootstrap macro -->
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Flasky - login{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Login</h1>
+</div>
+{{ wtf.quick_form(form) }}
+<br>
+<p>New user?
+    <!--url_for points to [blueprint].[view function]-->
+    <a href="{{ url_for('auth.register') }}">register</a>
+    Click here to register
+</p>
+<p>Forgot password?
+    <!--url_for points to [blueprint].[view function]-->
+    <a href="{{ url_for('auth.password_reset_request') }}">Reset</a>
+    Click here to reset password
+</p>
+{% endblock %}
