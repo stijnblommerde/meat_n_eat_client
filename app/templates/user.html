@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Flasky - User Profile{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(256) }}">
+    <div class="profile-header">
+        <h1>{{ user.username }}</h1>
+        {% if user.name or user.location %}
+        <p>
+            {% if user.name %}{{ user.name }}{% endif %}
+            {% if user.location %}
+            from <a href="http://maps.google.com/?q={{ user.location }}">
+            {{ user.location }}</a>
+            {% endif %}
+        </p>
+        {% endif %}
+        <!--is_administrator User method. chapter 9 user roles -->
+        <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
+        {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+
+        <!--localization of dates and times. chapter 3 templates-->
+        <p>
+            Member since {{ moment(user.member_since).format('L') }}
+            Last seen {{ moment(user.last_seen).fromNow() }}
+        </p>
+        <!-- conditie: user bekijkt zijn eigen profiel-->
+        {% if user == current_user %}
+        <a class="btn btn-default" href="{{ url_for('main.edit_profile') }}">
+            Edit profile
+        </a>
+        {% endif %}
+        {% if user.is_administrator %}
+        <a class="btn btn-danger"
+           href="{{ url_for('main.edit_profile_admin', id=user.id) }}">
+            Edit profile as administrator
+        </a>
+        {% endif %}
+        <br><br>
+    </div>
+</div>
+{% endblock %}

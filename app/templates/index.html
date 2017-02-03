@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Meat 'n Eat{% endblock %}
+
+{% block page_content %}
+    <ul>
+        {% for request in requests %}
+        <li>request.id</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
