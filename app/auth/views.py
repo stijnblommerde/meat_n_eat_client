@@ -1,12 +1,15 @@
-from flask import render_template, redirect, url_for, request, flash, \
-    current_app
-from flask_login import login_required, login_user, logout_user, current_user
+from flask import redirect, url_for, request, flash, current_app, \
+    render_template
+from flask_login import login_required
+from flask_login import login_user
+from flask_login import logout_user, current_user
 
 from app import db
-from app.auth.forms import LoginForm, RegistrationForm, UpdatePasswordForm, \
-    ResetPasswordForm, PasswordResetRequestForm, ChangeEmailRequestForm
-from app.decorators import admin_required, permission_required
-from app.models import User, Permission
+from app.auth.forms import RegistrationForm, UpdatePasswordForm, \
+    ResetPasswordForm, PasswordResetRequestForm, ChangeEmailRequestForm, \
+    LoginForm
+
+from app.models import User
 from . import auth
 from ..email import send_email
 
@@ -24,7 +27,6 @@ def before_request():
         if not current_user.confirmed \
             and request.endpoint[:5] != 'auth.':
             return redirect(url_for('auth.unconfirmed'))
-
 
 @auth.route('/unconfirmed')
 def unconfirmed():
@@ -45,8 +47,7 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
-            return redirect(request.args.get('next') or
-                            url_for('main.index'))
+            return redirect(request.args.get('next') or url_for('main.index'))
         flash('Invalid email or password.')
     return render_template('auth/login.html', form=form)
 
