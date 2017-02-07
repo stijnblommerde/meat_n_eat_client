@@ -1,8 +1,9 @@
+from httplib2 import Http
+import json
+
 from flask import redirect, url_for, request, flash, current_app, \
-    render_template
-from flask_login import login_required
-from flask_login import login_user
-from flask_login import logout_user, current_user
+    render_template, session
+from flask_login import login_required, login_user, logout_user, current_user
 
 from app import db
 from app.auth.forms import RegistrationForm, UpdatePasswordForm, \
@@ -28,6 +29,7 @@ def before_request():
             and request.endpoint[:5] != 'auth.':
             return redirect(url_for('auth.unconfirmed'))
 
+
 @auth.route('/unconfirmed')
 def unconfirmed():
     """ Explain user how to confirm email
@@ -41,7 +43,9 @@ def unconfirmed():
 # url prefixed with /auth (url_prefix app/__init__.py)
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    print('enter login')
     form = LoginForm()
+
     if form.validate_on_submit():
         # Login and validate the user.
         user = User.query.filter_by(email=form.email.data).first()
@@ -49,6 +53,27 @@ def login():
             login_user(user, form.remember_me.data)
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('Invalid email or password.')
+
+    # TODO: momenteel wordt een auth code opgevraagd via een html button click op de pagina clientoauth.html.
+    # TODO: moet mogelijk zijn om ook de auth code via python (i.p.v. js) en zonder button click op te halen
+
+    # elif request.method == 'POST':
+    #     print('enter post')
+    #     content = request.get_json(force=True)
+    #     auth_code = content.get('auth_code')
+    #     data = dict(auth_code=auth_code)
+    #     print('auth_code', auth_code)
+    #     h = Http()
+    #     response, content_bytes = h.request(
+    #         'http://localhost:6000/api/v1/google/login', method='POST',
+    #         body=json.dumps(data),
+    #         headers={"Content-Type": "application/json"})
+    #     token = json.loads(content_bytes.decode())['token']
+    #     print('token:', token)
+    #     session['api_token'] = token
+    #     return redirect(url_for('main.index'))
+
+    print('before auth/login')
     return render_template('auth/login.html', form=form)
 
 

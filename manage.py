@@ -13,10 +13,12 @@ if os.environ.get('MEAT_N_EAT_COVERAGE'):
     COV = coverage.coverage(branch=True, include='app/*')
     COV.start()
 
-app = create_app(os.getenv('MEAT_N_EAT_CONFIG') or 'default')
+# create app with 'development' or 'testing' depending on the phase
+app = create_app('development')
 manager = Manager(app)
-server = Server(host="0.0.0.0", port=5000)
 migrate = Migrate(app, db)
+server = Server(host="0.0.0.0", port=8080)
+
 
 def make_shell_context():
     return dict(app=app, db=db, User=User, Role=Role)

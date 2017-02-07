@@ -1,10 +1,12 @@
 import urllib
 import json
+import time
 
 from flask import flash
 from flask_login import current_user
-from httplib2 import Http
-from flask import render_template, request, redirect, url_for, session
+from httplib2 import Http, ServerNotFoundError
+from flask import render_template, request, redirect, url_for, session, \
+    flash, abort
 from flask_login import login_required
 
 from app import db
@@ -23,34 +25,53 @@ def get_token():
     if request.method == 'GET':
         auth_code = render_template('clientOAuth.html')
         return auth_code
-    elif request.method == 'POST':
+
+    if request.method == 'POST':
+        print('enter post')
         content = request.get_json(force=True)
         auth_code = content['auth_code']
         data = dict(auth_code=auth_code)
-        response, content_bytes = h.request(
-            'http://localhost:6000/api/v1/google/login', method='POST',
-            body=json.dumps(data),
-            headers={"Content-Type": "application/json"})
-        token = json.loads(content_bytes.decode())['token']
-        #TODO: store token in session and redirect
-        print('token:', token)
-        session['api_token'] = token
-        print('session:', session)
-        return render_template('index.html')
+        try:
+            response, content_bytes = h.request(
+                'http://localhost:5000/api/v1/google/login', method='POST',
+                body=json.dumps(data),
+                headers={"Content-Type": "application/json"})
+            if response['status'] == '404':
+                return render_template('404.html'), 404
+            token = json.loads(content_bytes.decode())['token']
+            session['api_token'] = token
+            return redirect(url_for('main.index'))
+        except:
+            return 'request refused'
+    return redirect(url_for('main.index'))
 
 
 @main.route('/')
 @login_required
 def index():
-    #print('session:', session)
+    print('enter index')
+    print('token:', session.get('api_token'))
     if not session.get('api_token'):
-        return 'No token'
-    h = Http()
-    h.add_credentials(session.get('api_token'), '')
-    response, content_bytes = h.request(
-        'http://localhost:6000/api/v1/requests', method='GET')
-    requests = json.loads(content_bytes.decode())['requests']
-    print(requests)
+        print('no token stored')
+        return redirect(url_for('main.get_token'))
+    try:
+        h = Http()
+        h.add_credentials(session.get('api_token'), '')
+        response, content_bytes = h.request(
+            'http://localhost:5000/api/v1/requests', method='GET')
+    except:
+        return 'connection refused'
+    content = content_bytes.decode()
+    print('response:', response)
+    print('content:', content)
+    if content == 'no open meal requests of others':
+        print('enter no open meal requests')
+        flash('No open meal requests of others')
+        return render_template('index.html', requests=[])
+    elif content == 'Unauthorized Access':
+        print('unauthorized access')
+        return redirect(url_for('main.get_token'))
+    requests = json.loads(content)
     return render_template('index.html', requests=requests)
 
 
